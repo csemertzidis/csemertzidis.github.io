@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 
 const ColorfulBackground = () => {
-  const [colorIndex, setColorIndex] = useState(0);
+  const [currentGradient, setCurrentGradient] = useState(0);
+  const [nextGradient, setNextGradient] = useState(1);
+  const [opacity, setOpacity] = useState(1);
 
   const gradients = [
     'linear-gradient(45deg, #ff6b6b, #4ecdc4)',
@@ -14,8 +16,6 @@ const ColorfulBackground = () => {
     'linear-gradient(45deg, #ff9a9e, #fecfef)',
     'linear-gradient(45deg, #667eea, #764ba2)',
     'linear-gradient(45deg, #f093fb, #f5576c)',
-    'linear-gradient(45deg, #4facfe, #00f2fe)',
-    'linear-gradient(45deg, #43e97b, #38f9d7)',
     'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
     'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
     'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
@@ -28,26 +28,58 @@ const ColorfulBackground = () => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setColorIndex((prevIndex) => (prevIndex + 1) % gradients.length);
-    }, 2000); // Change color every 2 seconds
+      // Start fading out
+      setOpacity(0);
+      
+      // After fade out completes, switch gradients and fade back in
+      setTimeout(() => {
+        setCurrentGradient(nextGradient);
+        setNextGradient((nextGradient + 1) % gradients.length);
+        setOpacity(1);
+      }, 1000); // Half of transition duration
+      
+    }, 3000); // Change color every 3 seconds
 
     return () => clearInterval(interval);
-  }, [gradients.length]);
+  }, [nextGradient, gradients.length]);
 
   return (
     <div
       style={{
+        position: 'relative',
         width: '100vw',
         height: '100vh',
-        background: gradients[colorIndex],
-        transition: 'background 1s ease-in-out',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
         margin: 0,
         padding: 0,
+        overflow: 'hidden',
       }}
-    />
+    >
+      {/* Background layer */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: gradients[nextGradient],
+        }}
+      />
+      
+      {/* Foreground layer with opacity transition */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: gradients[currentGradient],
+          opacity: opacity,
+          transition: 'opacity 2s ease-in-out',
+        }}
+      />
+    </div>
   );
 };
 
