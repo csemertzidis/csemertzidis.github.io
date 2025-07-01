@@ -1,17 +1,282 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Colorful Background App</title>
-    
-    
-    <script type="module" crossorigin src="/assets/index-b500e428.js"></script>
-    <link rel="stylesheet" href="/assets/index-0b99ca68.css">
-  </head>
-  <body>
-    <div id="root"></div>
-    
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js Colorful Universe</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow: hidden;
+            background: #000;
+        }
+
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+        }
+
+        #info {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: white;
+            font-size: 14px;
+            z-index: 10;
+            background: rgba(0,0,0,0.5);
+            padding: 10px;
+            border-radius: 5px;
+            backdrop-filter: blur(10px);
+        }
+
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+    <div id="info">
+        <h3>🌌 Three.js Colorful Universe</h3>
+        <p>Interactive 3D animated geometries</p>
+        <p>Move your mouse to explore!</p>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Scene setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0x000000, 0);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        // Color palettes for dynamic changing
+        const colorPalettes = [
+            [0xff6b6b, 0x4ecdc4, 0xffd93d],
+            [0xa8e6cf, 0xdcedc8, 0x6bcf7f],
+            [0x4facfe, 0x00f2fe, 0x43e97b],
+            [0xfa709a, 0xfee140, 0xa8edea],
+            [0xff9a9e, 0xfecfef, 0x667eea],
+            [0xf093fb, 0xf5576c, 0x30cfd0],
+            [0x91a7ff, 0xa8edea, 0xfed6e3]
+        ];
+
+        let currentPalette = 0;
+        let geometries = [];
+        let mouse = { x: 0, y: 0 };
+
+        // Create animated geometries
+        function createGeometries() {
+            // Clear existing geometries
+            geometries.forEach(geo => scene.remove(geo));
+            geometries = [];
+
+            const palette = colorPalettes[currentPalette];
+            
+            // Create floating spheres
+            for (let i = 0; i < 15; i++) {
+                const geometry = new THREE.SphereGeometry(
+                    Math.random() * 2 + 0.5, 
+                    32, 
+                    32
+                );
+                const material = new THREE.MeshLambertMaterial({
+                    color: palette[Math.floor(Math.random() * palette.length)],
+                    transparent: true,
+                    opacity: 0.8
+                });
+                const sphere = new THREE.Mesh(geometry, material);
+                
+                sphere.position.set(
+                    (Math.random() - 0.5) * 40,
+                    (Math.random() - 0.5) * 40,
+                    (Math.random() - 0.5) * 40
+                );
+                
+                sphere.userData = {
+                    originalPosition: sphere.position.clone(),
+                    rotationSpeed: {
+                        x: (Math.random() - 0.5) * 0.02,
+                        y: (Math.random() - 0.5) * 0.02,
+                        z: (Math.random() - 0.5) * 0.02
+                    },
+                    floatSpeed: Math.random() * 0.02 + 0.01,
+                    floatOffset: Math.random() * Math.PI * 2
+                };
+                
+                scene.add(sphere);
+                geometries.push(sphere);
+            }
+
+            // Create rotating torus knots
+            for (let i = 0; i < 8; i++) {
+                const geometry = new THREE.TorusKnotGeometry(
+                    Math.random() * 3 + 1,
+                    Math.random() * 0.5 + 0.2,
+                    64,
+                    8,
+                    Math.floor(Math.random() * 5) + 2,
+                    Math.floor(Math.random() * 5) + 3
+                );
+                const material = new THREE.MeshPhongMaterial({
+                    color: palette[Math.floor(Math.random() * palette.length)],
+                    transparent: true,
+                    opacity: 0.7,
+                    wireframe: Math.random() > 0.5
+                });
+                const torus = new THREE.Mesh(geometry, material);
+                
+                torus.position.set(
+                    (Math.random() - 0.5) * 50,
+                    (Math.random() - 0.5) * 50,
+                    (Math.random() - 0.5) * 50
+                );
+                
+                torus.userData = {
+                    originalPosition: torus.position.clone(),
+                    rotationSpeed: {
+                        x: (Math.random() - 0.5) * 0.03,
+                        y: (Math.random() - 0.5) * 0.03,
+                        z: (Math.random() - 0.5) * 0.03
+                    }
+                };
+                
+                scene.add(torus);
+                geometries.push(torus);
+            }
+
+            // Create animated boxes
+            for (let i = 0; i < 10; i++) {
+                const size = Math.random() * 2 + 0.5;
+                const geometry = new THREE.BoxGeometry(size, size, size);
+                const material = new THREE.MeshPhongMaterial({
+                    color: palette[Math.floor(Math.random() * palette.length)],
+                    transparent: true,
+                    opacity: 0.6
+                });
+                const box = new THREE.Mesh(geometry, material);
+                
+                box.position.set(
+                    (Math.random() - 0.5) * 45,
+                    (Math.random() - 0.5) * 45,
+                    (Math.random() - 0.5) * 45
+                );
+                
+                box.userData = {
+                    originalPosition: box.position.clone(),
+                    rotationSpeed: {
+                        x: (Math.random() - 0.5) * 0.04,
+                        y: (Math.random() - 0.5) * 0.04,
+                        z: (Math.random() - 0.5) * 0.04
+                    }
+                };
+                
+                scene.add(box);
+                geometries.push(box);
+            }
+        }
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(10, 10, 5);
+        scene.add(directionalLight);
+
+        const pointLight = new THREE.PointLight(0xffffff, 1, 100);
+        pointLight.position.set(0, 0, 10);
+        scene.add(pointLight);
+
+        // Camera position
+        camera.position.z = 30;
+
+        // Mouse interaction
+        document.addEventListener('mousemove', (event) => {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        });
+
+        // Initialize geometries
+        createGeometries();
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const time = Date.now() * 0.001;
+
+            // Animate geometries
+            geometries.forEach((geo, index) => {
+                // Rotation
+                geo.rotation.x += geo.userData.rotationSpeed.x;
+                geo.rotation.y += geo.userData.rotationSpeed.y;
+                geo.rotation.z += geo.userData.rotationSpeed.z;
+
+                // Floating motion for spheres
+                if (geo.geometry.type === 'SphereGeometry') {
+                    geo.position.y = geo.userData.originalPosition.y + 
+                        Math.sin(time * geo.userData.floatSpeed + geo.userData.floatOffset) * 3;
+                }
+
+                // Mouse interaction
+                const mouseInfluence = 0.1;
+                geo.position.x += (mouse.x * 5 - geo.position.x) * mouseInfluence * 0.1;
+                geo.position.y += (mouse.y * 5 - geo.position.y) * mouseInfluence * 0.1;
+
+                // Scale pulsing
+                const scale = 1 + Math.sin(time * 2 + index) * 0.1;
+                geo.scale.set(scale, scale, scale);
+            });
+
+            // Camera movement
+            camera.position.x += (mouse.x * 10 - camera.position.x) * 0.05;
+            camera.position.y += (mouse.y * 10 - camera.position.y) * 0.05;
+            camera.lookAt(scene.position);
+
+            // Dynamic lighting
+            pointLight.position.x = Math.sin(time * 0.5) * 20;
+            pointLight.position.y = Math.cos(time * 0.3) * 20;
+            pointLight.position.z = Math.sin(time * 0.7) * 20;
+
+            renderer.render(scene, camera);
+        }
+
+        // Change color palette every 5 seconds
+        setInterval(() => {
+            currentPalette = (currentPalette + 1) % colorPalettes.length;
+            createGeometries();
+        }, 5000);
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Start animation
+        animate();
+
+        // Hide info after 5 seconds
+        setTimeout(() => {
+            document.getElementById('info').style.opacity = '0';
+            document.getElementById('info').style.transition = 'opacity 2s ease-out';
+        }, 5000);
+    </script>
+</body>
 </html>

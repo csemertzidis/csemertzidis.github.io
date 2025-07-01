@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Colorful Background App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        #background-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .background-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transition: opacity 2s ease-in-out;
+        }
+
+        #background-layer {
+            z-index: 1;
+        }
+
+        #foreground-layer {
+            z-index: 2;
+        }
+    </style>
+</head>
+<body>
+    <div id="background-container">
+        <div id="background-layer" class="background-layer"></div>
+        <div id="foreground-layer" class="background-layer"></div>
+    </div>
+
+    <script>
+        const gradients = [
+            'linear-gradient(45deg, #ff6b6b, #4ecdc4)',
+            'linear-gradient(45deg, #a8e6cf, #dcedc8)',
+            'linear-gradient(45deg, #ffd93d, #6bcf7f)',
+            'linear-gradient(45deg, #4facfe, #00f2fe)',
+            'linear-gradient(45deg, #43e97b, #38f9d7)',
+            'linear-gradient(45deg, #fa709a, #fee140)',
+            'linear-gradient(45deg, #a8edea, #fed6e3)',
+            'linear-gradient(45deg, #ff9a9e, #fecfef)',
+            'linear-gradient(45deg, #667eea, #764ba2)',
+            'linear-gradient(45deg, #f093fb, #f5576c)',
+            'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+            'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+            'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+            'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+            'linear-gradient(135deg, #30cfd0 0%, #91a7ff 100%)',
+            'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+            'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)',
+        ];
+
+        let currentGradient = 0;
+        let nextGradient = 1;
+
+        const backgroundLayer = document.getElementById('background-layer');
+        const foregroundLayer = document.getElementById('foreground-layer');
+
+        // Initialize
+        backgroundLayer.style.background = gradients[nextGradient];
+        foregroundLayer.style.background = gradients[currentGradient];
+        foregroundLayer.style.opacity = '1';
+
+        function transitionColors() {
+            // Start fading out the foreground layer
+            foregroundLayer.style.opacity = '0';
+            
+            // After fade out completes, switch gradients and fade back in
+            setTimeout(() => {
+                currentGradient = nextGradient;
+                nextGradient = (nextGradient + 1) % gradients.length;
+                
+                // Update backgrounds
+                foregroundLayer.style.background = gradients[currentGradient];
+                backgroundLayer.style.background = gradients[nextGradient];
+                
+                // Fade back in
+                foregroundLayer.style.opacity = '1';
+            }, 1000); // Half of transition duration
+        }
+
+        // Start the color transition cycle
+        setInterval(transitionColors, 3000); // Change color every 3 seconds
+
+        // Ensure full viewport coverage
+        window.addEventListener('resize', () => {
+            document.getElementById('background-container').style.height = window.innerHeight + 'px';
+        });
+    </script>
+</body>
+</html>
